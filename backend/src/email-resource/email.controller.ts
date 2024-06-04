@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EmailService } from './email.service';
+import { Controller, Get, Post, Body, Param, Delete, Put, Res } from '@nestjs/common';
+import { EmailServiceImpl } from './email.service';
 import { CreateEmailDto } from './dto/create-email.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
+import { SendEmailDTO } from './dto/sendMail.dto';
+import { Response } from 'express';
 
-@Controller('email')
+@Controller('/api/email-template')
 export class EmailController {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(private readonly emailService: EmailServiceImpl) {}
 
   @Post()
   create(@Body() createEmailDto: CreateEmailDto) {
@@ -17,18 +19,30 @@ export class EmailController {
     return this.emailService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.emailService.findOne(+id);
+  @Post("send")
+  sendMail(@Body() sendMailDTO: SendEmailDTO){
+    return this.emailService.sendEmail(sendMailDTO.id, sendMailDTO.to);
   }
 
-  @Patch(':id')
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.emailService.findOne(id);
+  }
+
+  @Get("download/:id")
+  async download(@Param("id") id: string, @Res() res: Response){
+    res.setHeader('Content-Type', 'message/rfc822');
+    res.setHeader('Content-Disposition', `attachment; filename="email.eml"`);
+    res.send(await this.emailService.downloadEmail(id));
+  }
+
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateEmailDto: UpdateEmailDto) {
-    return this.emailService.update(+id, updateEmailDto);
+    return this.emailService.update(id, updateEmailDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.emailService.remove(+id);
+    return this.emailService.remove(id);
   }
 }

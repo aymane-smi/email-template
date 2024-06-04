@@ -1,0 +1,30 @@
+MIME-Version: 1.0
+    Content-Type: multipart/alternative; boundary="boundary123"
+
+    --boundary123
+    Content-Type: text/plain; charset=UTF-8
+
+    This is the plain text version of the email.
+
+    --boundary123
+    Content-Type: text/html; charset=UTF-8
+    Content-Transfer-Encoding: quoted-printable
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>hello</title>
+    </head>
+    <body>
+      
+      <div style="background-color: #ffffff; padding: 20px; border: 1px solid #ccc;">
+        <p dir = "auto"></p>
+
+      </div>
+    
+    </body>
+    </html>
+
+    --boundary123--
+  

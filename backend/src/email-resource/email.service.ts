@@ -4,10 +4,12 @@ import { UpdateEmailDto } from './dto/update-email.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Email } from 'src/Schemas/Email';
 import { Model } from 'mongoose';
+import { EmailService } from './email-service.interface';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
-export class EmailService {
-  public constructor(@InjectModel(Email.name)private readonly emailModel: Model<Email>){}
+export class EmailServiceImpl implements EmailService{
+  public constructor(@InjectModel(Email.name)private readonly emailModel: Model<Email>, private mailerService: MailerService){}
   async create(createEmailDto: CreateEmailDto) {
     let result = await this.emailModel.create({
       ...createEmailDto,
@@ -17,19 +19,54 @@ export class EmailService {
     return result;
   }
 
-  findAll() {
-    return `This action returns all email`;
+  async findAll() {
+    return await this.emailModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} email`;
+  async findOne(id: string) {
+    return await this.emailModel.findById(id);
   }
 
-  update(id: number, updateEmailDto: UpdateEmailDto) {
-    return `This action updates a #${id} email`;
+  async update(id: string, updateEmailDto: UpdateEmailDto) {
+    await this.emailModel.findByIdAndUpdate(id, updateEmailDto);
+    return "email template update";
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} email`;
+  async remove(id: string) {
+    return await this.emailModel.findByIdAndDelete(id);
+  }
+
+  async sendEmail(id: string, to: string) {
+    let template = await this.emailModel.findById(id);
+    return await this.mailerService.sendEmail(template, to); 
+  }
+
+  async downloadEmail(id: string) {
+    let template = await this.emailModel.findById(id);
+    return `MIME-Version: 1.0
+    Content-Type: multipart/alternative; boundary="boundary123"
+
+    --boundary123
+    Content-Type: text/plain; charset=UTF-8
+
+    This is the plain text version of the email.
+
+    --boundary123
+    Content-Type: text/html; charset=UTF-8
+    Content-Transfer-Encoding: quoted-printable
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>${template.title}</title>
+    </head>
+    <body>
+      ${template.template}
+    </body>
+    </html>
+
+    --boundary123--
+  `;
   }
 }

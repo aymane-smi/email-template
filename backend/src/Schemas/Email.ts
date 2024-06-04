@@ -5,11 +5,9 @@ export type EmailContet = HydratedDocument<Email>;
 @Schema()
 export class Email{
     @Prop()
-    From: string;
+    template: string
     @Prop()
-    Template: string
-    @Prop()
-    Title: string
+    title: string
     @Prop()
     created_at: Date;
     @Prop()
